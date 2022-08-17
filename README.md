@@ -29,7 +29,7 @@ KAFKA_VERSION=3.2.1
 To start single instance (controller and broker) use command:
 
 ```bash
-docker run -it --rm -p 9092:9092 kafka-kraft:2.13-3.2.1
+docker run -it --rm -p 9092:9092 tidexenso/kafka-kraft:latest
 ```
 
 Remember to review console output with server setting.
@@ -113,12 +113,12 @@ so it need to be set on all brokers and controllers to the same value for them t
 
 To generate unique cluster id command can be used:
 ```bash
-docker run -it --rm kafka-kraft:2.13-3.2.1 /opt/kafka/bin/kafka-storage.sh random-uuid
+docker run -it --rm tidexenso/kafka-kraft:latest /opt/kafka/bin/kafka-storage.sh random-uuid
 ```
 
 ## Automatically create topics
 
-If you want to have kafka-kraft automatically create topics in Kafka during creation, a `KAFKA_CREATE_TOPICS` environment variable can be defined.
+If you want to have kafka kraft automatically create topics in Kafka during creation, a `KAFKA_CREATE_TOPICS` environment variable can be defined.
 
 Syntax: `<topic_name>:<partition>:<replicas>:[cleanup.policy]`
 
@@ -145,7 +145,7 @@ If you wish to use multi-line YAML or some other delimiter between your topic de
 
 ### simple docker
 ```bash
-docker run -it --rm -p 9092:9092 kafka-kraft:2.13-3.2.1
+docker run -it --rm -p 9092:9092 tidexenso/kafka-kraft:latest
 ```
 
 ### single-node docker compose
@@ -165,7 +165,7 @@ VOLUME=$(docker volume create kafka_data)
 CONTAINER=$(docker run -p 9092:9092 \
   -e KAFKA_CREATE_TOPICS="topic_1:3:1,topic_2:1:1:compact" \
   --mount source=kafka_data,destination=/data \
-  -it --rm -d kafka-kraft:2.13-3.2.1)
+  -it --rm -d tidexenso/kafka-kraft:latest)
 
 # Check if topics exist
 kafkacat -L -b localhost:9092

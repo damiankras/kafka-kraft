@@ -1,7 +1,7 @@
 version: '2'
 services:
   kafka:
-    build: .
+    image: tidexenso/kafka-kraft:latest
     ports:
       - "9092:9092"
     environment:

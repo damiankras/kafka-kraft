@@ -1,10 +1,7 @@
 version: '2'
 services:
   kafka-broker-1:
-    image: kafka-kraft
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: tidexenso/kafka-kraft:latest
     ports:
       - "19092:9092"
     environment:
@@ -19,10 +16,7 @@ services:
     restart: unless-stopped
 
   kafka-broker-2:
-    image: kafka-kraft
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: tidexenso/kafka-kraft:latest
     ports:
       - "29092:9092"
     environment:
@@ -35,7 +29,7 @@ services:
     restart: unless-stopped
 
   kafka-broker-3:
-    image: kafka-kraft
+    image: tidexenso/kafka-kraft:latest
     build:
       context: .
       dockerfile: Dockerfile

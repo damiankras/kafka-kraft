@@ -1,6 +1,8 @@
 
 ARG KAFKA_VERSION=3.2.1
 ARG SCALA_VERSION=2.13
+ARG REVISION=unspecified
+ARG BUILD_DATE=unspecified
 
 #
 # Download and unpack kafka
@@ -9,7 +11,9 @@ FROM debian:bookworm-slim AS builder
 
 # https://docs.docker.com/engine/reference/builder/#understand-how-arg-and-from-interact
 ARG KAFKA_VERSION \
-    SCALA_VERSION
+    SCALA_VERSION \
+    REVISION \
+    BUILD_DATE
 
 ENV SCALA_VERSION=$SCALA_VERSION \
     KAFKA_VERSION=$KAFKA_VERSION \
@@ -42,12 +46,22 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 # https://docs.docker.com/engine/reference/builder/#understand-how-arg-and-from-interact
 ARG KAFKA_VERSION \
-    SCALA_VERSION
+    SCALA_VERSION \
+    REVISION \
+    BUILD_DATE
 
-LABEL org.label-schema.name="kafka-kraft" \
-      org.label-schema.description="Apache Kafka KRaft Mode" \
-      org.label-schema.version="${SCALA_VERSION}-${KAFKA_VERSION}" \
-      org.label-schema.schema-version="1.0"
+# https://github.com/opencontainers/image-spec/blob/main/annotations.md
+LABEL org.opencontainers.image.created="${BUILD_DATE}" \
+    org.opencontainers.image.authors="tidexenso" \
+    org.opencontainers.image.url="https://github.com/tidexenso/kafka-kraft" \
+    org.opencontainers.image.documentation="https://github.com/tidexenso/kafka-kraft/blob/main/README.md" \
+    org.opencontainers.image.source="https://github.com/tidexenso/kafka-kraft" \
+    org.opencontainers.image.version="${SCALA_VERSION}-${KAFKA_VERSION}" \
+    org.opencontainers.image.revision="${REVISION}" \
+    org.opencontainers.image.vendor="tidexenso" \
+    org.opencontainers.image.licenses="Apache License 2.0" \
+    org.opencontainers.image.title="tidexenso/kafka-kraft" \
+    org.opencontainers.image.description="Apache Kafka KRaft Mode"
 
 # VOLUME [ "/data" ]
 

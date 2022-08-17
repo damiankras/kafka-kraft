@@ -15,7 +15,9 @@ KAFKA_VERSION="$2"
 
 TAG="${SCALA_VERSION}-${KAFKA_VERSION}"
 
-echo "TAG : $TAG"
+REGISTRY=tidexenso
+REVISION=$(git log --format="%h" -n 1)
+BUILD_DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
 
 # Build for amd64 and arm64
 # PLATFORMS="linux/amd64,linux/arm64"
@@ -26,6 +28,9 @@ docker buildx build \
     --progress=plain \
     --build-arg KAFKA_VERSION=$KAFKA_VERSION \
     --build-arg SCALA_VERSION=$SCALA_VERSION \
-    --build-arg BUILD_DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ") \
-    -t kafka-kraft:$TAG \
+    --build-arg REVISION=$REVISION \
+    --build-arg BUILD_DATE=$BUILD_DATE \
+    -t $REGISTRY/kafka-kraft:$TAG \
     -f Dockerfile .
+
+docker tag $REGISTRY/kafka-kraft:$TAG $REGISTRY/kafka-kraft:latest
