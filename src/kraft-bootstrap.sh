@@ -23,9 +23,6 @@ ORIG_IFS=$IFS
 #
 # Create topics in background 
 #
-if [[ -z "$KAFKA_PORT" ]]; then
-    export KAFKA_PORT=9092
-fi
 ${KAFKA_HOME}/kraft-create-topics.sh &
 unset KAFKA_CREATE_TOPICS
 

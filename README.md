@@ -22,9 +22,9 @@ KAFKA_VERSION=3.2.1
 ./docker-buildx.sh $SCALA_VERSION $KAFKA_VERSION
 ```
 
-## Quick start
+# Quick start
 
-### docker
+## docker
 
 To start single instance (controller and broker) use command:
 
@@ -35,26 +35,45 @@ docker run -it --rm -p 9092:9092 tidexenso/kafka-kraft:latest
 Remember to review console output with server setting.
 In this mode CLUSTER_ID is randomized so each time you will get new single node cluster.
 
-### single-node docker compose
+## single-node docker compose
 
 To run single node cluster using docker compose from root directory of repository run command:
 
 ```bash
-docker-compose -f docker-compose-single.yaml up
+docker-compose -f examples/docker-compose-single.yaml up
 ```
 
 Compose file contains [Kafka UI](https://github.com/provectus/kafka-ui) (web application - http://localhost:8080) which can be used to review cluster.
 
-### multi-node docker compose
+## multi-node docker compose
 
 To run multi node cluster using docker compose from root directory of repository run command:
 
 ```bash
-docker-compose -f docker-compose-multi.yaml up
+docker-compose -f examples/docker-compose-multi.yaml up
 ```
 
 Compose file contains [Kafka UI](https://github.com/provectus/kafka-ui) (web application - http://localhost:8080) which can be used to review cluster.
 
+
+## Kubernetes single-node sample
+
+To run this example you need k8s and kubectl
+```bash
+kubectl apply -f examples/k8s-kafka-kraft-single.yaml
+```
+
+| service                    | type      | port             |
+|:-                          |:-         |:-                |
+| service/kafka-nodeport-svc | NodePort  | 30092:30092/TCP  |
+| service/kafka-svc          | ClusterIP | 9092/TCP         |
+| service/kafka-ui-svc       | NodePort  | 8080:30080/TCP   |
+
+Deployment contains [Kafka UI](https://github.com/provectus/kafka-ui) (web application - http://localhost:8080) which is exposed as NodePort and can be used to review kafka cluster.
+
+Kafka is exposed via NodePort service and can be reach from k8s worker node on port 30092.
+> NOTE! </br>
+> When using Docker Desktop or minikube kafka will be available on **localhost:30092**
 
 # Configuration
 
@@ -92,18 +111,19 @@ Predefined variables which should not be overriden
 | `KAFKA_VERSION`   | contains version of kafka installed
 | `KAFKA_HOME`      | directory where kafka is installed
 | `KAFKA_DATA`      | direcotry where kafka data will be sotred
-| `KAFKA_PORT`      | used only in combination with `KAFKA_CREATE_TOPICS` when default kafka port is changed
+changed
 
 ## Configuration environment variables
 
 Variables which should be overriden to change configuration
-| variable                  | description
-| :------------------------ | :-
-| `KAFKA_CLUSTER_ID`        | See: [Kafka Kraft CLUSTER_ID](#kafka-kraft-cluster-id)
-| `KAFKA_CREATE_TOPICS`     | See: [Automatically create topics](#automatically-create-topics)
-| `KAFKA_HEAP_OPTS`         | allow to override KAFKA_HEAP_OPTS in `kafka-server-start.sh`
-| `KAFKA_JMX_OPTS`          | allow to set JMX options for [kafka debugging](https://stackoverflow.com/questions/36708384/how-to-enable-remote-jmx-on-kafka-brokers-for-jmxtool)
-| `JMX_PORT`                | allow to set JMX port for debugging and monitoring
+| variable                                | description
+| :------------------------               | :-
+| `KAFKA_CLUSTER_ID`                      | See: [Kafka Kraft CLUSTER_ID](#kafka-kraft-cluster-id)
+| `KAFKA_CREATE_TOPICS`                   | See: [Automatically create topics](#automatically-create-topics)
+| `KAFKA_CREATE_TOPICS_BOOTSTRAP_SERVERS` | See: [Automatically create topics](#automatically-create-topics)
+| `KAFKA_HEAP_OPTS`                       | allow to override KAFKA_HEAP_OPTS in `kafka-server-start.sh`
+| `KAFKA_JMX_OPTS`                        | allow to set JMX options for [kafka debugging](https://stackoverflow.com/questions/36708384/how-to-enable-remote-jmx-on-kafka-brokers-for-jmxtool)
+| `JMX_PORT`                              | allow to set JMX port for debugging and monitoring
 
 ## Kafka Kraft cluster id
 
@@ -118,20 +138,25 @@ docker run -it --rm tidexenso/kafka-kraft:latest /opt/kafka/bin/kafka-storage.sh
 
 ## Automatically create topics
 
-If you want to have kafka kraft automatically create topics in Kafka during creation, a `KAFKA_CREATE_TOPICS` environment variable can be defined.
+If you want to have kafka kraft automatically create topics in Kafka during creation, 
+a `KAFKA_CREATE_TOPICS` environment variable can be defined.
+There is possibility to set `KAFKA_CREATE_TOPICS_BOOTSTRAP_SERVERS` 
+to point servers on which command should be performed, by default it is performed on `localhost:9092`.
+(to see it in action review k8s example)
 
-Syntax: `<topic_name>:<partition>:<replicas>:[cleanup.policy]`
+Syntax: `<topic_name>[:partition][:replicas][:cleanup.policy]`
 
 Where:
 - topic_name - (required) string : name of new topic
-- partition - (required) int > 0 : number of partitions
-- replicas - (required) int > 0 : replication factor
+- partition - (optional) int > 0 : number of partitions
+- replicas - (optional) int > 0 : replication factor
 - cleanup.policy - (optional) : `compact` or (default) `delete`
 
 Here is an example snippet from docker-compose.yml :
 
 ```yaml
   environment:
+    KAFKA_CREATE_TOPICS_BOOTSTRAP_SERVERS: "localhost:9092"
     KAFKA_CREATE_TOPICS: "topic_1:1:3,topic_2:1:1:compact"
 ```
 

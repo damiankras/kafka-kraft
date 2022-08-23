@@ -1,0 +1,143 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kafka-nodeport-svc
+spec:
+  selector:
+    app: kafka-app
+  type: NodePort
+  ports:
+    - name: nodeport
+      protocol: TCP
+      targetPort: nodeport
+      port: 30092
+      nodePort: 30092
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kafka-svc
+spec:
+  selector:
+    app: kafka-app
+  ports:
+    - name: external
+      targetPort: external
+      port: 9092
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kafka
+spec:
+  selector:
+    matchLabels:
+      app: kafka-app
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+  minReadySeconds: 5
+  template:
+    metadata:
+      labels:
+        app: kafka-app
+    spec:
+      containers:
+        - name: kafka-kraft
+          image: tidexenso/kafka-kraft:latest
+          imagePullPolicy: IfNotPresent
+          resources: {}
+          securityContext:
+            privileged: false
+          env:
+            - name: KAFKA_CLUSTER_ID
+              value: aktrcaTSRsmKDFqALt0KLA
+
+            - name: KAFKA_PROP_NODE_ID
+              value: "1"
+
+            - name: KAFKA_PROP_PROCESS_ROLES
+              value: "broker,controller"
+
+            - name: KAFKA_PROP_CONTROLLER_QUORUM_VOTERS
+              value: "1@localhost:9091"
+
+            - name: KAFKA_PROP_LISTENERS
+              value: "CONTROLLER://:9091,EXTERNAL://:9092,INTERNAL://:9093,NODEPORT://:30092"
+
+            - name: KAFKA_PROP_ADVERTISED_LISTENERS
+              value: "EXTERNAL://kafka-svc:9092,INTERNAL://localhost:9093,NODEPORT://localhost:30092"
+
+            - name: KAFKA_PROP_LISTENER_SECURITY_PROTOCOL_MAP
+              value: "CONTROLLER:PLAINTEXT,INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT,NODEPORT:PLAINTEXT"
+            
+            - name: KAFKA_PROP_INTER_BROKER_LISTENER_NAME
+              value: "EXTERNAL"
+            
+            # use INTERNAL listener to create topics
+            # script is running on the same host as kafka server
+            - name: KAFKA_CREATE_TOPICS_BOOTSTRAP_SERVERS
+              value: "localhost:9093"
+
+            - name: KAFKA_CREATE_TOPICS
+              value: "topic_1:1:1,topic_2:10:1:compact"
+
+          ports:
+            - containerPort: 9092
+              name: external
+            - containerPort: 30092
+              name: nodeport
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kafka-ui-svc
+spec:
+  selector:
+    app: kafka-ui-app
+  type: NodePort
+  ports:
+    - name: nodeport
+      targetPort: http
+      port: 8080
+      nodePort: 30080
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kafka-ui
+spec:
+  selector:
+    matchLabels:
+      app: kafka-ui-app
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+  minReadySeconds: 5
+  template:
+    metadata:
+      labels:
+        app: kafka-ui-app
+    spec:
+      containers:
+        - name: kafka-ui
+          image: provectuslabs/kafka-ui:latest
+          imagePullPolicy: IfNotPresent
+          resources: {}
+          securityContext:
+            privileged: false
+          env:
+            - name: KAFKA_CLUSTERS_0_NAME
+              value: kafka-kraft
+            - name: KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS
+              value: "kafka-svc:9092"
+          ports:
+            - containerPort: 8080
+              name: http

@@ -30,9 +30,6 @@ services:
 
   kafka-broker-3:
     image: tidexenso/kafka-kraft:latest
-    build:
-      context: .
-      dockerfile: Dockerfile
     ports:
       - "39092:9092"
     environment:
