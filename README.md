@@ -69,7 +69,7 @@ kubectl apply -f examples/k8s-kafka-kraft-single.yaml
 | service/kafka-svc          | ClusterIP | 9092/TCP         |
 | service/kafka-ui-svc       | NodePort  | 8080:30080/TCP   |
 
-Deployment contains [Kafka UI](https://github.com/provectus/kafka-ui) (web application - http://localhost:8080) which is exposed as NodePort and can be used to review kafka cluster.
+Deployment contains [Kafka UI](https://github.com/provectus/kafka-ui) (web application - http://localhost:30080) which is exposed as NodePort and can be used to review kafka cluster.
 
 Kafka is exposed via NodePort service and can be reach from k8s worker node on port 30092.
 > NOTE! </br>
